@@ -121,16 +121,16 @@ body {
 	justify-content: space-between;
 	border-radius: var(--radius);
 }
-.project:hover .box {
+.project:not(#project-form):hover .box {
 	background-color: var(--bg-alt2);
-	box-shadow: var(--distant-shadow) !important;
+	box-shadow: var(--close-shadow);
 	transform: scale(1.05);
 }
 .project.selected .box {
 	background-color: var(--bg-alt3);
 	box-shadow: var(--close-shadow);
 }
-.project:active .box {
+.project:not(#project-form):active .box {
 	transform: scale(0.925);
 }
 .project.sortable-chosen .box {
@@ -162,5 +162,42 @@ body {
 	opacity: 0;
 }
 .project:hover .buttons {
+	opacity: 1;
+}
+
+#project-form {
+	display: none;
+	cursor: initial;
+}
+#project-form .box {
+	background-color: var(--bg-alt2);
+	box-shadow: var(--close-shadow);
+}
+#project-form form {
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+#project-form form label {
+	font-size: 18px;
+	font-weight: 700;
+	color: var(--text);
+}
+#project-form form input {
+	width: calc(100% + 10px);
+	margin: 5px -5px;
+	padding: 10px 12px;
+	font-size: 15px;
+	color: var(--text-alt2);
+	background-color: var(--bg-alt);
+	border-radius: 10px;
+}
+#project-form form input:focus {
+	color: var(--text);
+}
+#project-form .buttons {
+	margin-block: 0;
+	justify-content: space-around;
 	opacity: 1;
 }

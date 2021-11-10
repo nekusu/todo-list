@@ -16,7 +16,26 @@
 	<nav id="sidebar">
 		<span>Projects</span>
 		<div class="container">
-			<div id="projects"></div>
+			<div id="projects">
+				<div class="project" id="project-form">
+					<div class="box">
+						<form action="">
+							<div>
+								<input type="text" name="name" placeholder="Project name" autocomplete="off"
+									maxlength="10" required>
+							</div>
+							<div class="buttons">
+								<button class="icon-button" type="button" title="Cancel">
+									<span class="material-icons-round">close</span>
+								</button>
+								<button class="icon-button" type="submit" title="Confirm">
+									<span class="material-icons-round">check</span>
+								</button>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
 		</div>
 		<button class="button" id="add-project">
 			<span class="material-icons-round">post_add</span> Add project

@@ -1,14 +1,25 @@
-import Project from './project.js'
+import Project from './project.js';
+import Events from './events.js';
 
 class UI {
 	static projects = document.querySelector('#projects');
+	static projectForm = document.querySelector('#project-form');
 
 	static loadHomePage() {
 		UI.loadProjects();
+		UI.setEventListeners();
 	}
 
 	static loadProjects() {
 		UI.appendProject(new Project('All tasks'));
+	}
+
+	static setEventListeners() {
+		const addProjectButton = document.querySelector('#add-project');
+		const cancelProjectButton = document.querySelector('#project-form button[title="Cancel"]');
+		addProjectButton.addEventListener('click', () => UI.showProjectForm());
+		cancelProjectButton.addEventListener('click', () => UI.hideProjectForm());
+		UI.projectForm.addEventListener('submit', Events.addProject);
 	}
 
 	static createElement(tag, attributes, ...children) {
@@ -56,8 +67,29 @@ class UI {
 		const container = UI.createElement('div', { class: 'container' }, name, tasks);
 		const box = UI.createElement('div', { class: 'box' }, container, project.name === 'All tasks' ? null : createButtons())
 		const projectElement = UI.createElement('div', { class: 'project' }, box);
-		projectElement.id = project.name.replace(/\s/, '-');
+		projectElement.id = project.name.replace(/\s/g, '-');
 		UI.projects.appendChild(projectElement);
+	}
+
+	static showProjectForm(projectId = '') {
+		if (projectId) {
+			const project = document.querySelector(`#${projectId}`);
+			UI.projects.insertBefore(UI.projectForm, project);
+		} else {
+			UI.projects.appendChild(UI.projectForm);
+		}
+		const form = UI.projectForm.querySelector('form');
+		const formInput = UI.projectForm.querySelector('input');
+		form.id = projectId;
+		UI.projectForm.style.display = 'block';
+		formInput.focus();
+	}
+
+	static hideProjectForm() {
+		const form = UI.projectForm.querySelector('form');
+		form.reset();
+		UI.projectForm.style.display = 'none';
+		UI.projects.insertBefore(UI.projectForm, UI.projects.firstElementChild);
 	}
 }
 
