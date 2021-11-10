@@ -8,7 +8,7 @@ class TodoList {
 		return TodoList.projects.find(project => project.name === projectName);
 	}
 	static addProject(project) {
-		if (!TodoList.contains(project)) {
+		if (!TodoList.contains(project.name)) {
 			TodoList.projects.push(project);
 		}
 	}
