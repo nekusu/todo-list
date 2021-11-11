@@ -1,5 +1,3 @@
-import TodoList from './todoList.js';
-
 class Project {
 	constructor(name) {
 		this.name = name;
@@ -12,15 +10,24 @@ class Project {
 	getTask(taskName) {
 		return this.tasks.find(task => task.name === taskName);
 	}
-	addTask(task) {
-		if (!this.contains(task.name)) {
-			this.tasks.push(task);
+	getTaskById(taskId) {
+		return this.tasks.find(task => task.id === taskId);
+	}
+	addTask(...tasks) {
+		for (const task of tasks) {
+			if (!this.contains(task.name)) {
+				this.tasks.push(task);
+			}
 		}
-		TodoList.save();
+		this.save();
 	}
 	deleteTask(taskName) {
 		this.tasks = this.tasks.filter(task => task.name !== taskName);
-		TodoList.save();
+		this.save();
+	}
+	async save() {
+		const { default: todoList } = await import('./todoList.js');
+		todoList.save();
 	}
 }
 

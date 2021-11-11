@@ -56,6 +56,37 @@ class Events {
 			UI.removeProject(this);
 		}
 	}
+
+	static expand(e) {
+		if (e.target.classList.contains('expand')) {
+			if (this.classList.contains('expanded')) {
+				this.classList.remove('expanded');
+			} else {
+				this.classList.add('expanded');
+			}
+		}
+	}
+
+	static checkTask(e) {
+		if (e.target.classList.contains('checkbox')) {
+			if (this.classList.contains('checked')) {
+				this.classList.remove('checked', 'expanded');
+			} else {
+				this.classList.add('checked');
+			}
+			const taskElement = UI.getClosestParent(e.target, '.task');
+			console.log(TodoList);
+			TodoList.getTaskById(+taskElement.id).toggleCheck();
+		}
+	}
+	static deleteTask(e) {
+		if (e.target.classList.contains('delete')) {
+			const taskElement = UI.getClosestParent(e.target, '.task');
+			const task = TodoList.getTaskById(+taskElement.id);
+			TodoList.getProject(task.project).deleteTask(task.name);
+			UI.removeTask(taskElement);
+		}
+	}
 }
 
 export default Events;

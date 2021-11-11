@@ -1,5 +1,3 @@
-import Project from './project.js';
-import Task from './task.js';
 import Events from './events.js';
 import Sortable from 'sortablejs';
 import TodoList from './todoList.js';
@@ -15,6 +13,7 @@ class UI {
 		today: document.querySelector('#today'),
 		upcoming: document.querySelector('#upcoming')
 	};
+	static selectedProject;
 
 	static loadHomePage() {
 		UI.loadProjects();
@@ -41,6 +40,7 @@ class UI {
 	}
 
 	static loadTasks(projectName) {
+		UI.selectedProject = projectName;
 		UI.#clearTasks();
 		for (const task of TodoList.getProject(projectName).tasks) {
 			UI.appendTask(task);
@@ -125,8 +125,20 @@ class UI {
 		if (group === 'expired') {
 			taskElement.classList.add('expired');
 		}
+		if (task.isChecked) {
+			taskElement.classList.add('checked');
+		}
+		taskElement.id = task.id;
+		[Events.expand, Events.checkTask, Events.deleteTask].forEach(fun => taskElement.addEventListener('click', fun));
 		UI.dateGroups[group].classList.remove('hidden');
 		UI.dateGroups[group].lastElementChild.appendChild(taskElement);
+	}
+	static removeTask(taskElement) {
+		if (!(taskElement.parentNode.children.length - 1)) {
+			const dateGroup = UI.getClosestParent(taskElement, '.date-group');
+			dateGroup.classList.add('hidden');
+		}
+		taskElement.remove();
 	}
 
 	static showProjectForm(projectId = '') {
@@ -156,6 +168,15 @@ class UI {
 		}
 		UI.projectForm.classList.add('hidden');
 		UI.projects.insertBefore(UI.projectForm, UI.projects.firstElementChild);
+	}
+
+	static getClosestParent(element, selector) {
+		if (element === document) {
+			return null;
+		} else if (element.parentNode.matches(selector)) {
+			return element.parentNode;
+		}
+		return UI.getClosestParent(element.parentNode, selector);
 	}
 
 	static toId(name) {

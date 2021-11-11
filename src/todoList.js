@@ -1,3 +1,6 @@
+import Project from './project.js';
+import Task from './task.js';
+
 class TodoList {
 	static projects = TodoList.#load() || [];
 
@@ -6,7 +9,14 @@ class TodoList {
 		localStorage.setItem('todoList', JSON.stringify(TodoList.projects));
 	}
 	static #load() {
-		return JSON.parse(localStorage.getItem('todoList'));
+		let projects = JSON.parse(localStorage.getItem('todoList'));
+		if (projects) {
+			projects = projects.map(project => {
+				project.tasks = project.tasks.map(task => Object.assign(new Task(), task));
+				return Object.assign(new Project(), project);
+			});
+			return projects;
+		}
 	}
 
 	static contains(projectName) {
@@ -34,6 +44,20 @@ class TodoList {
 	static deleteProject(projectName) {
 		TodoList.projects = TodoList.projects.filter(project => project.name !== projectName);
 		TodoList.save();
+	}
+	static getTask(taskName) {
+		const projects = TodoList.projects.filter(project => project.name !== 'All tasks');
+		for (const project of projects) {
+			const task = project.getTask(taskName);
+			if (task) return task;
+		}
+	}
+	static getTaskById(taskId) {
+		const projects = TodoList.projects.filter(project => project.name !== 'All tasks');
+		for (const project of projects) {
+			const task = project.getTaskById(taskId);
+			if (task) return task;
+		}
 	}
 	static getAllTasks() {
 		return TodoList.projects.filter(project => project.name !== 'All tasks').reduce((tasks, project) => tasks.concat(project.tasks), []);
