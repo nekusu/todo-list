@@ -1,5 +1,6 @@
 import Project from './project.js';
 import Events from './events.js';
+import Sortable from 'sortablejs';
 
 class UI {
 	static projects = document.querySelector('#projects');
@@ -12,6 +13,7 @@ class UI {
 
 	static loadProjects() {
 		UI.appendProject(new Project('All tasks'));
+		Sortable.create(UI.projects, { group: 'projects', handle: '.drag', animation: 300, draggable: '.project:not(#All-tasks)', swapThreshold: 0.75 });
 	}
 
 	static setEventListeners() {
