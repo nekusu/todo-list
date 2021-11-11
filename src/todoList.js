@@ -2,6 +2,7 @@ class TodoList {
 	static projects = TodoList.#load() || [];
 
 	static save() {
+		TodoList.updateAllTasks();
 		localStorage.setItem('todoList', JSON.stringify(TodoList.projects));
 	}
 	static #load() {
@@ -14,13 +15,19 @@ class TodoList {
 	static getProject(projectName) {
 		return TodoList.projects.find(project => project.name === projectName);
 	}
+	static getProjectById(projectId) {
+		const projectName = projectId.replace(/-/g, ' ');
+		return TodoList.getProject(projectName);
+	}
 	static setProjects(projects) {
 		TodoList.projects = projects;
 		TodoList.save();
 	}
-	static addProject(project) {
-		if (!TodoList.contains(project.name)) {
-			TodoList.projects.push(project);
+	static addProject(...projects) {
+		for (const project of projects) {
+			if (!TodoList.contains(project.name)) {
+				TodoList.projects.push(project);
+			}
 		}
 		TodoList.save();
 	}
@@ -28,8 +35,11 @@ class TodoList {
 		TodoList.projects = TodoList.projects.filter(project => project.name !== projectName);
 		TodoList.save();
 	}
-	static getTotalTasks() {
-		return TodoList.projects.reduce((total, project) => total + project.tasks.length, 0);
+	static getAllTasks() {
+		return TodoList.projects.filter(project => project.name !== 'All tasks').reduce((tasks, project) => tasks.concat(project.tasks), []);
+	}
+	static updateAllTasks() {
+		TodoList.getProject('All tasks').tasks = TodoList.getAllTasks();
 	}
 }
 

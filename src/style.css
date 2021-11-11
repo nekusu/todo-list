@@ -218,3 +218,162 @@ span {
 	justify-content: space-around;
 	opacity: 1;
 }
+
+main {
+	margin-left: 440px;
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+#tasks {
+	width: 90%;
+	max-width: 800px;
+	position: relative;
+	z-index: 2;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+#tasks > span {
+	width: 100%;
+	display: block;
+}
+#tasks #project-name {
+	padding: 30px 6px 10px;
+	font-size: 32px;
+	font-weight: 800;
+	color: var(--text);
+}
+#tasks > .date-group {
+	margin-top: 16px;
+	width: 100%;
+}
+#tasks .date-group > span {
+	padding-inline: 10px;
+	display: block;
+	font-size: 24px;
+	font-weight: 700;
+	color: var(--text-alt);
+}
+
+.task {
+	width: 100%;
+	margin-block: 18px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	align-items: center;
+}
+.task .header {
+	width: 100%;
+	padding: 8px 14px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	position: relative;
+	z-index: 1;
+	color: var(--text);
+	background-color: var(--bg-alt2);
+	border-radius: var(--radius);
+	box-shadow: var(--close-shadow);
+	transition: var(--transition);
+}
+.task:hover .header {
+	background-color: var(--bg-alt3);
+	box-shadow: var(--distant-shadow);
+	transform: scale(1.0125);
+}
+.task.checked .header {
+	background-color: transparent;
+	box-shadow: none;
+}
+.task .container {
+	display: flex;
+	align-items: center;
+}
+.task .checkbox {
+	margin-right: 8px;
+	position: relative;
+}
+.task .checkbox span {
+	transition: opacity 0.2s;
+}
+.task .checkbox .check {
+	position: absolute;
+	top: 0;
+	left: 0;
+	opacity: 0;
+}
+.task.checked .uncheck {
+	opacity: 0;
+}
+.task.checked .check {
+	opacity: 1;
+}
+.task.checked .name {
+	text-decoration: line-through;
+	color: var(--text-alt2);
+}
+.task .buttons {
+	display: flex;
+}
+.task .buttons > button {
+	margin-left: 5px;
+}
+.task.expanded .expand {
+	transform: rotate(180deg);
+}
+.task.checked .expand,
+.task.checked .edit,
+.task:not(.checked) .delete {
+	display: none;
+}
+.task.expired .delete {
+	display: block;
+}
+.task .info {
+	width: 90%;
+	margin-bottom: -4px;
+	padding: 25px 22px 18px;
+	position: relative;
+	z-index: 0;
+	color: var(--text);
+	background: var(--bg-alt);
+	border-radius: 0 0 var(--radius) var(--radius);
+	transform: translateY(-8px);
+	box-shadow: var(--close-shadow);
+	transition: var(--transition);
+}
+.task.checked .info,
+.task:not(.expanded) .info {
+	display: none;
+}
+.task:hover .info {
+	box-shadow: var(--distant-shadow);
+	transform: scale(1.0125) translateY(-4px);
+}
+.task .info .description {
+	min-width: 100%;
+	line-height: 20px;
+	font-size: 15px;
+	color: var(--text-alt);
+}
+.task .info .date {
+	margin-top: 10px;
+	font-weight: 700;
+	text-align: right;
+}
+.task .info .date .material-icons-round {
+	margin-left: 10px;
+	font-size: 17px;
+	vertical-align: sub;
+	color: var(--text-alt);
+}
+.task.sortable-chosen .header {
+	transform: scale(0.985);
+}
+.task.sortable-chosen .info {
+	transform: scale(0.985) translateY(-8px);
+}

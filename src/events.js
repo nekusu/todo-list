@@ -6,12 +6,11 @@ class Events {
 	static addProject(e) {
 		e.preventDefault();
 		const projectName = e.target[0].value.trim();
-		if (!TodoList.contains(projectName) && projectName !== 'All tasks') {
+		if (!TodoList.contains(projectName)) {
 			const project = new Project(projectName);
 			TodoList.addProject(project);
 			UI.appendProject(project);
 			UI.hideProjectForm();
-			UI.resetIds(UI.projects.children);
 		} else {
 			alert(`Project "${projectName}" already exists.`);
 		}
@@ -26,6 +25,8 @@ class Events {
 					sibling.classList.remove('selected');
 				}
 			}
+			const projectName = TodoList.getProjectById(e.target.parentNode.id).name;
+			UI.loadTasks(projectName);
 		}
 	}
 	static openEditForm(e) {
@@ -36,15 +37,10 @@ class Events {
 	static editProject(e) {
 		e.preventDefault();
 		const projectName = e.target[0].value.trim();
-		if (!TodoList.contains(projectName) && projectName !== 'All tasks') {
-			const projectId = projectName.replace(/\s/g, '-');
-			const oldProjectName = e.target.dataset.id.replace(/-/g, ' ');
-			const projectElement = UI.projects.querySelector(`#${e.target.dataset.id}`);
-			const nameElement = projectElement.querySelector(`.name`);
-			projectElement.id = projectId;
-			e.target.dataset.id = projectId;
-			nameElement.textContent = projectName;
-			TodoList.getProject(oldProjectName).name = projectName;
+		if (!TodoList.contains(projectName)) {
+			TodoList.getProjectById(e.target.dataset.id).name = projectName;
+			UI.editProject(e.target.dataset.id, projectName);
+			e.target.dataset.id = UI.toId(projectName);
 			UI.hideProjectForm();
 		} else {
 			alert(`Project "${projectName}" already exists.`);
@@ -52,13 +48,12 @@ class Events {
 	}
 	static deleteProject(e) {
 		if (e.target.classList.contains('delete')) {
+			const projectName = TodoList.getProjectById(this.id).name;
+			TodoList.deleteProject(projectName);
 			if (this.classList.contains('selected')) {
 				this.previousElementSibling.firstElementChild.click();
 			}
-			const projectName = this.id.replace(/-/g, ' ');
-			TodoList.deleteProject(projectName);
-			this.remove();
-			UI.resetIds(UI.projects.children);
+			UI.removeProject(this);
 		}
 	}
 }

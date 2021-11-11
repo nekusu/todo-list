@@ -25,6 +25,7 @@
     "webpack-cli": "^4.9.1"
   },
   "dependencies": {
+    "date-fns": "^2.25.0",
     "lod": "^0.1.0",
     "sortablejs": "^1.14.0"
   }
