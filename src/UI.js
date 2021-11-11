@@ -19,7 +19,13 @@ class UI {
 		const cancelProjectButton = document.querySelector('#project-form button[title="Cancel"]');
 		addProjectButton.addEventListener('click', () => UI.showProjectForm());
 		cancelProjectButton.addEventListener('click', () => UI.hideProjectForm());
-		UI.projectForm.addEventListener('submit', Events.addProject);
+		UI.projectForm.addEventListener('submit', e => {
+			if (e.target.dataset.id) {
+				Events.editProject(e);
+			} else {
+				Events.addProject(e);
+			}
+		});
 	}
 
 	static createElement(tag, attributes, ...children) {
@@ -68,27 +74,51 @@ class UI {
 		const box = UI.createElement('div', { class: 'box' }, container, project.name === 'All tasks' ? null : createButtons())
 		const projectElement = UI.createElement('div', { class: 'project' }, box);
 		projectElement.id = project.name.replace(/\s/g, '-');
+		[Events.selectProject, Events.openEditForm, Events.deleteProject].forEach(fun => projectElement.addEventListener('click', fun));
 		UI.projects.appendChild(projectElement);
+		projectElement.firstElementChild.click();
+	}
+
+	static showProject(projectId) {
+		const project = UI.projects.querySelector(`#${projectId}`);
+		if (project) {
+			project.classList.remove('hidden');
+		}
+	}
+	static hideProject(projectId) {
+		const project = UI.projects.querySelector(`#${projectId}`);
+		if (project) {
+			project.classList.add('hidden');
+		}
 	}
 
 	static showProjectForm(projectId = '') {
-		if (projectId) {
-			const project = document.querySelector(`#${projectId}`);
-			UI.projects.insertBefore(UI.projectForm, project);
-		} else {
-			UI.projects.appendChild(UI.projectForm);
-		}
 		const form = UI.projectForm.querySelector('form');
 		const formInput = UI.projectForm.querySelector('input');
-		form.id = projectId;
-		UI.projectForm.style.display = 'block';
+		if (form.dataset.id) {
+			UI.showProject(form.dataset.id);
+		}
+		if (projectId) {
+			const project = document.querySelector(`#${projectId}`);
+			const nameElement = project.querySelector('.name');
+			UI.hideProject(projectId);
+			UI.projects.insertBefore(UI.projectForm, project);
+			formInput.value = nameElement.textContent;
+		} else {
+			UI.projects.appendChild(UI.projectForm);
+			form.reset();
+		}
+		form.dataset.id = projectId;
+		UI.projectForm.classList.remove('hidden');
 		formInput.focus();
 	}
 
 	static hideProjectForm() {
 		const form = UI.projectForm.querySelector('form');
-		form.reset();
-		UI.projectForm.style.display = 'none';
+		if (form.dataset.id) {
+			UI.showProject(form.dataset.id);
+		}
+		UI.projectForm.classList.add('hidden');
 		UI.projects.insertBefore(UI.projectForm, UI.projects.firstElementChild);
 	}
 }
