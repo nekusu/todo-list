@@ -11,6 +11,7 @@ class Events {
 			TodoList.addProject(project);
 			UI.appendProject(project);
 			UI.hideProjectForm();
+			UI.resetIds(UI.projects.children);
 		} else {
 			alert(`Project "${projectName}" already exists.`);
 		}
@@ -57,6 +58,7 @@ class Events {
 			const projectName = this.id.replace(/-/g, ' ');
 			TodoList.deleteProject(projectName);
 			this.remove();
+			UI.resetIds(UI.projects.children);
 		}
 	}
 }

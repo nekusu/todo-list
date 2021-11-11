@@ -1,6 +1,8 @@
 import Project from './project.js';
 import Events from './events.js';
 import Sortable from 'sortablejs';
+import TodoList from './todoList.js';
+import lod from 'lod';
 
 class UI {
 	static projects = document.querySelector('#projects');
@@ -13,7 +15,26 @@ class UI {
 
 	static loadProjects() {
 		UI.appendProject(new Project('All tasks'));
-		Sortable.create(UI.projects, { group: 'projects', handle: '.drag', animation: 300, draggable: '.project:not(#All-tasks)', swapThreshold: 0.75 });
+		if (!TodoList.projects.length) {
+			TodoList.setProjects([new Project('Personal'), new Project('Work')])
+		}
+		for (const project of TodoList.projects) {
+			UI.appendProject(project);
+		}
+		UI.resetIds(UI.projects.children);
+		UI.projects.children[1].firstElementChild.click();
+		Sortable.create(UI.projects, {
+			group: 'projects',
+			handle: '.drag',
+			animation: 300,
+			draggable: '.project:not(#All-tasks)',
+			swapThreshold: 0.75,
+			onEnd: function () {
+				const indexArray = [...UI.projects.children].map(project => +project.dataset.id).filter(id => id >= 0);
+				TodoList.setProjects(lod(TodoList.projects, indexArray));
+				UI.resetIds(UI.projects.children);
+			}
+		});
 	}
 
 	static setEventListeners() {
@@ -122,6 +143,15 @@ class UI {
 		}
 		UI.projectForm.classList.add('hidden');
 		UI.projects.insertBefore(UI.projectForm, UI.projects.firstElementChild);
+	}
+
+	static resetIds(array) {
+		let i = -1;
+		for (const item of array) {
+			if (!item.dataset.id || item.dataset.id >= -1) {
+				item.dataset.id = i++;
+			}
+		}
 	}
 }
 
