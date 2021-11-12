@@ -1,4 +1,5 @@
 import Project from './project.js';
+import Task from './task.js';
 import TodoList from './todoList.js';
 import UI from './UI.js';
 
@@ -29,18 +30,20 @@ class Events {
 			UI.loadTasks(projectName);
 		}
 	}
-	static openEditForm(e) {
+	static openEditProjectForm(e) {
 		if (e.target.classList.contains('edit')) {
 			UI.showProjectForm(this.id);
 		}
 	}
 	static editProject(e) {
 		e.preventDefault();
-		const projectName = e.target[0].value.trim();
-		if (!TodoList.contains(projectName)) {
-			TodoList.getProjectById(e.target.dataset.id).name = projectName;
-			UI.editProject(e.target.dataset.id, projectName);
-			e.target.dataset.id = UI.toId(projectName);
+		const form = e.target;
+		const project = TodoList.getProjectById(form.dataset.id);
+		const projectName = form.name.value.trim();
+		if (!TodoList.contains(projectName) || project.name === projectName) {
+			project.name = projectName;
+			UI.editProject(form.dataset.id, projectName);
+			form.dataset.id = UI.toId(projectName);
 			UI.hideProjectForm();
 		} else {
 			alert(`Project "${projectName}" already exists.`);
@@ -67,6 +70,21 @@ class Events {
 		}
 	}
 
+	static addTask(e) {
+		e.preventDefault();
+		const form = e.target;
+		const project = TodoList.getProject(UI.selectedProject);
+		const taskName = form.name.value.trim();
+		if (!project.contains(taskName)) {
+			const task = new Task(taskName, project.name, form.description.value.trim(), form.date.value);
+			project.addTask(task);
+			UI.appendTask(task);
+			UI.updateTaskCount(task.project);
+			UI.hideTaskForm();
+		} else {
+			alert(`Task "${taskName}" already exists.`);
+		}
+	}
 	static checkTask(e) {
 		if (e.target.classList.contains('checkbox')) {
 			if (this.classList.contains('checked')) {
@@ -75,16 +93,34 @@ class Events {
 				this.classList.add('checked');
 			}
 			const taskElement = UI.getClosestParent(e.target, '.task');
-			console.log(TodoList);
-			TodoList.getTaskById(+taskElement.id).toggleCheck();
+			TodoList.getTaskById(taskElement.id).toggleCheck();
+		}
+	}
+	static openEditTaskForm(e) {
+		if (e.target.classList.contains('edit')) {
+			UI.showTaskForm(this.id);
+		}
+	}
+	static editTask(e) {
+		e.preventDefault();
+		const form = e.target;
+		const project = TodoList.getProject(UI.selectedProject);
+		const task = project.getTaskById(form.dataset.id);
+		const taskName = form.name.value.trim();
+		if (!project.contains(taskName) || task.name == taskName) {
+			task.edit(taskName, form.description.value.trim(), form.date.value);
+			UI.loadTasks(project.name);
+			UI.hideTaskForm();
+		} else {
+			alert(`Task "${taskName}" already exists.`);
 		}
 	}
 	static deleteTask(e) {
 		if (e.target.classList.contains('delete')) {
 			const taskElement = UI.getClosestParent(e.target, '.task');
-			const task = TodoList.getTaskById(+taskElement.id);
+			const task = TodoList.getTaskById(taskElement.id);
 			TodoList.getProject(task.project).deleteTask(task.name);
-			UI.removeTask(taskElement);
+			UI.removeTask(taskElement, task.project);
 		}
 	}
 }

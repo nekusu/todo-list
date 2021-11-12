@@ -62,6 +62,10 @@ class TodoList {
 	static getAllTasks() {
 		return TodoList.projects.filter(project => project.name !== 'All tasks').reduce((tasks, project) => tasks.concat(project.tasks), []);
 	}
+	static getTaskCount(projectName) {
+		const amount = TodoList.getProject(projectName).tasks.length;
+		return `${amount ? amount : 'No'} task${amount === 1 ? '' : 's'}`;
+	}
 	static updateAllTasks() {
 		TodoList.getProject('All tasks').tasks = TodoList.getAllTasks();
 	}

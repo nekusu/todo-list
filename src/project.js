@@ -11,7 +11,7 @@ class Project {
 		return this.tasks.find(task => task.name === taskName);
 	}
 	getTaskById(taskId) {
-		return this.tasks.find(task => task.id === taskId);
+		return this.tasks.find(task => task.id === +taskId);
 	}
 	addTask(...tasks) {
 		for (const task of tasks) {

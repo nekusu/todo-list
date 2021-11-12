@@ -9,7 +9,8 @@ function setDefaultProject() {
 	TodoList.addProject(allTasks);
 	if (TodoList.projects.length <= 1) {
 		const getStarted = new Project('Get started');
-		getStarted.addTask(new Task('Add your first task! Expand to see more ->', getStarted.name, 'First, create a new project clicking on "Add project", then click on "Add task", set the name, a description and the due date. That\'s it, have fun! Don\'t forget to visit my Github!'));
+		getStarted.addTask(
+			new Task('Add your first task! Expand to see more ->', getStarted.name, 'First, create a new project clicking on "Add project", then click on "Add task", set the name, a description and the due date. That\'s it, have fun! Don\'t forget to visit my Github!'));
 		TodoList.addProject(getStarted);
 	}
 }

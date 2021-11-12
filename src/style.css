@@ -86,7 +86,7 @@ span {
 	background-color: var(--bg-alt);
 	box-shadow: var(--distant-shadow);
 }
-#sidebar > span {
+#sidebar h1 {
 	margin: 30px 45px 15px;
 	display: block;
 	font-size: 32px;
@@ -220,6 +220,7 @@ span {
 }
 
 main {
+	height: 100vh;
 	margin-left: 440px;
 	position: relative;
 	display: flex;
@@ -231,17 +232,34 @@ main {
 	width: 90%;
 	max-width: 800px;
 	position: relative;
-	z-index: 2;
+	z-index: 1;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
+	transition: transform 0.3s, opacity 0.3s;
 }
-#tasks > span {
+#tasks.hidden {
+	transform: translateY(-100%);
+	opacity: 0;
+}
+#tasks header {
 	width: 100%;
-	display: block;
-}
-#tasks #project-name {
 	padding: 30px 6px 10px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	flex-wrap: wrap;
+}
+#tasks #add-task {
+	transition: var(--transition);
+}
+#tasks #add-task.hidden {
+	display: block;
+	pointer-events: none;
+	opacity: 0;
+	transform: scale(0.875);
+}
+#tasks .project-name {
 	font-size: 32px;
 	font-weight: 800;
 	color: var(--text);
@@ -336,7 +354,7 @@ main {
 .task .info {
 	width: 90%;
 	margin-bottom: -4px;
-	padding: 25px 22px 18px;
+	padding: 25px 22px 0;
 	position: relative;
 	z-index: 0;
 	color: var(--text);
@@ -356,12 +374,14 @@ main {
 }
 .task .info .description {
 	min-width: 100%;
+	margin-bottom: 18px;
 	line-height: 20px;
 	font-size: 15px;
+	overflow-wrap: anywhere;
 	color: var(--text-alt);
 }
 .task .info .date {
-	margin-top: 10px;
+	margin-bottom: 18px;
 	font-weight: 700;
 	text-align: right;
 }
@@ -376,4 +396,91 @@ main {
 }
 .task.sortable-chosen .info {
 	transform: scale(0.985) translateY(-8px);
+}
+
+#task-form {
+	width: calc(95% - 440px);
+	max-width: 600px;
+	position: fixed;
+	z-index: 0;
+	top: 100vh;
+	opacity: 0;
+	transition: top 0.4s, opacity 0.4s;
+}
+#task-form.visible {
+	top: 0;
+	opacity: 1;
+}
+#task-form h1 {
+	padding: 30px 6px 28px;
+	font-size: 32px;
+	font-weight: 800;
+	color: var(--text);
+}
+#task-form form {
+	width: 100%;
+	padding: 20px 32px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	color: var(--text);
+	border-radius: var(--radius);
+	background-color: var(--bg-alt);
+	box-shadow: var(--close-shadow);
+}
+#task-form form > div {
+	width: 100%;
+	padding-block: 12px;
+}
+#task-form .form-group {
+	display: flex;
+	flex-direction: column;
+}
+#task-form .form-group input,
+#task-form .form-group textarea {
+	width: 100%;
+	margin-top: 10px;
+	padding: 10px 12px;
+	font-size: 15px;
+	resize: none;
+	color: var(--text-alt2);
+	background-color: var(--bg-alt2);
+	border-radius: 10px;
+	transition: var(--transition);
+}
+#task-form label {
+	font-size: 17px;
+	font-weight: 700;
+	color: var(--text-alt);
+}
+#task-form input:focus,
+#task-form textarea:focus {
+	background-color: var(--bg-alt3);
+	color: var(--text);
+}
+#description {
+	height: 74px;
+}
+#task-form #date {
+	width: 150px;
+	margin-right: 5px;
+}
+#task-form .container {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-end;
+	flex-wrap: wrap;
+}
+#task-form .buttons {
+	margin-top: 10px;
+	display: flex;
+	flex-wrap: wrap;
+}
+#task-form .buttons > button {
+	height: min-content;
+	margin: 10px 2px 0;
+}
+#task-form .buttons > button:first-child {
+	background-color: transparent;
+	box-shadow: none;
 }

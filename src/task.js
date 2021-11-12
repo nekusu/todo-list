@@ -19,7 +19,6 @@ class Task {
 	}
 	toggleCheck() {
 		this.isChecked = !this.isChecked;
-		console.log(this.isChecked)
 		this.save();
 	}
 	async save() {

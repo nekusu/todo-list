@@ -2,12 +2,13 @@ import Events from './events.js';
 import Sortable from 'sortablejs';
 import TodoList from './todoList.js';
 import lod from 'lod';
-import { isToday, isBefore, set } from 'date-fns';
+import { isToday, isBefore, parseISO, set } from 'date-fns';
 
 class UI {
 	static projects = document.querySelector('#projects');
 	static projectForm = document.querySelector('#project-form');
 	static tasks = document.querySelector('#tasks');
+	static taskForm = document.querySelector('#task-form');
 	static dateGroups = {
 		expired: document.querySelector('#expired'),
 		today: document.querySelector('#today'),
@@ -40,12 +41,20 @@ class UI {
 	}
 
 	static loadTasks(projectName) {
-		UI.selectedProject = projectName;
+		UI.#setProjectName(projectName);
 		UI.#clearTasks();
+		const form = UI.taskForm.querySelector('form');
+		if (projectName === 'All tasks' || form.dataset.id) {
+			UI.hideTaskForm();
+		}
+		if (projectName === 'All tasks') {
+			UI.#hideAddTaskButton();
+		} else {
+			UI.#showAddTaskButton();
+		}
 		for (const task of TodoList.getProject(projectName).tasks) {
 			UI.appendTask(task);
 		}
-		UI.#setProjectName(projectName);
 	}
 
 	static appendProject(project) {
@@ -57,12 +66,12 @@ class UI {
 			return buttons;
 		}
 		const name = UI.#createElement('p', { class: 'name' }, project.name);
-		const tasks = UI.#createElement('p', { class: 'tasks' }, `${project.tasks.length} tasks`);
+		const tasks = UI.#createElement('p', { class: 'tasks' }, TodoList.getTaskCount(project.name));
 		const container = UI.#createElement('div', { class: 'container' }, name, tasks);
 		const box = UI.#createElement('div', { class: 'box' }, container, project.name === 'All tasks' ? null : createButtons())
 		const projectElement = UI.#createElement('div', { class: 'project' }, box);
 		projectElement.id = UI.toId(project.name);
-		[Events.selectProject, Events.openEditForm, Events.deleteProject].forEach(fun => projectElement.addEventListener('click', fun));
+		[Events.selectProject, Events.openEditProjectForm, Events.deleteProject].forEach(fun => projectElement.addEventListener('click', fun));
 		UI.projects.appendChild(projectElement);
 		UI.#resetIds(UI.projects.children);
 		projectElement.firstElementChild.click();
@@ -77,6 +86,10 @@ class UI {
 	static removeProject(projectElement) {
 		projectElement.remove();
 		UI.#resetIds(UI.projects.children);
+		if (UI.selectedProject === 'All tasks') {
+			UI.loadTasks('All tasks');
+		}
+		UI.updateTaskCount();
 	}
 
 	static appendTask(task) {
@@ -92,7 +105,7 @@ class UI {
 				const editButton = UI.#createButton('edit', 'edit');
 				const deleteButton = UI.#createButton('delete', 'delete');
 				const buttons = UI.#createElement('div', { class: 'buttons' }, expandButton, editButton, deleteButton);
-				if (!task.description && (!task.date || isToday(new Date(task.date)))) {
+				if (!task.description && (!task.date || isToday(parseISO(task.date)))) {
 					expandButton.classList.add('hidden');
 				}
 				return buttons;
@@ -101,7 +114,7 @@ class UI {
 			const name = UI.#createElement('p', { class: 'name' }, task.name);
 			const container = UI.#createElement('div', { class: 'container' }, dragButton, createCheckBox(), name);
 			const header = UI.#createElement('div', { class: 'header' }, container, createButtons());
-			if (!isToday(new Date(task.date))) {
+			if (UI.selectedProject === 'All tasks' || !isToday(parseISO(task.date))) {
 				dragButton.classList.add('hidden');
 			}
 			return header;
@@ -112,7 +125,7 @@ class UI {
 			if (!task.description) {
 				description.classList.add('hidden');
 			}
-			if (!task.date || isToday(new Date(task.date))) {
+			if (!task.date || isToday(parseISO(task.date))) {
 				date.classList.add('hidden');
 			}
 			const info = UI.#createElement('div', { class: 'info' }, description, date);
@@ -129,37 +142,47 @@ class UI {
 			taskElement.classList.add('checked');
 		}
 		taskElement.id = task.id;
-		[Events.expand, Events.checkTask, Events.deleteTask].forEach(fun => taskElement.addEventListener('click', fun));
+		[Events.expand, Events.checkTask, Events.openEditTaskForm, Events.deleteTask].forEach(fun => taskElement.addEventListener('click', fun));
 		UI.dateGroups[group].classList.remove('hidden');
 		UI.dateGroups[group].lastElementChild.appendChild(taskElement);
 	}
-	static removeTask(taskElement) {
+	static removeTask(taskElement, projectName) {
 		if (!(taskElement.parentNode.children.length - 1)) {
 			const dateGroup = UI.getClosestParent(taskElement, '.date-group');
 			dateGroup.classList.add('hidden');
 		}
 		taskElement.remove();
+		UI.updateTaskCount(projectName);
+	}
+
+	static updateTaskCount(...projects) {
+		setTimeout(() => {
+			projects.push('All tasks');
+			for (const project of projects) {
+				const projectElement = UI.projects.querySelector(`#${UI.toId(project)}`);
+				const tasks = projectElement.querySelector('.tasks');
+				tasks.textContent = TodoList.getTaskCount(project);
+			}
+		}, 50);
 	}
 
 	static showProjectForm(projectId = '') {
 		const form = UI.projectForm.querySelector('form');
-		const formInput = UI.projectForm.querySelector('input');
 		if (form.dataset.id) {
 			UI.#showProject(form.dataset.id);
 		}
 		if (projectId) {
-			const project = document.querySelector(`#${projectId}`);
-			const nameElement = project.querySelector('.name');
+			const projectElement = UI.projects.querySelector(`#${projectId}`);
+			form.name.value = TodoList.getProjectById(projectId).name;
 			UI.#hideProject(projectId);
-			UI.projects.insertBefore(UI.projectForm, project);
-			formInput.value = nameElement.textContent;
+			UI.projects.insertBefore(UI.projectForm, projectElement);
 		} else {
 			UI.projects.appendChild(UI.projectForm);
 			form.reset();
 		}
 		form.dataset.id = projectId;
 		UI.projectForm.classList.remove('hidden');
-		formInput.focus();
+		form.name.focus();
 	}
 	static hideProjectForm() {
 		const form = UI.projectForm.querySelector('form');
@@ -168,6 +191,34 @@ class UI {
 		}
 		UI.projectForm.classList.add('hidden');
 		UI.projects.insertBefore(UI.projectForm, UI.projects.firstElementChild);
+	}
+
+	static showTaskForm(taskId = '') {
+		const title = UI.taskForm.querySelector('h1');
+		const projectName = UI.taskForm.querySelector('.project-name');
+		const form = UI.taskForm.querySelector('form');
+		if (taskId) {
+			const task = TodoList.getTaskById(taskId);
+			for (const property in task) {
+				if (form[property]) {
+					form[property].value = task[property];
+				}
+			}
+			title.firstChild.nodeValue = 'Edit task';
+			projectName.classList.add('hidden');
+		} else {
+			title.firstChild.nodeValue = 'Add task to ';
+			projectName.classList.remove('hidden');
+			form.reset();
+		}
+		form.dataset.id = taskId;
+		UI.tasks.classList.add('hidden');
+		UI.taskForm.classList.add('visible');
+		form.name.focus();
+	}
+	static hideTaskForm() {
+		UI.tasks.classList.remove('hidden');
+		UI.taskForm.classList.remove('visible');
 	}
 
 	static getClosestParent(element, selector) {
@@ -200,8 +251,11 @@ class UI {
 	}
 
 	static #setProjectName(name) {
-		const projectName = document.querySelector('#project-name');
-		projectName.textContent = name;
+		const elements = document.querySelectorAll('.project-name');
+		for (const element of elements) {
+			element.textContent = name;
+		}
+		UI.selectedProject = name;
 	}
 
 	static #showProject(projectId) {
@@ -217,10 +271,19 @@ class UI {
 		}
 	}
 
+	static #showAddTaskButton() {
+		const addTaskButton = document.querySelector('#add-task');
+		addTaskButton.classList.remove('hidden');
+	}
+	static #hideAddTaskButton() {
+		const addTaskButton = document.querySelector('#add-task');
+		addTaskButton.classList.add('hidden');
+	}
+
 	static #findDateGroup(task) {
-		if (isToday(new Date(task.date))) {
+		if (isToday(parseISO(task.date))) {
 			return 'today';
-		} else if (isBefore(new Date(task.date), set(new Date(), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }))) {
+		} else if (isBefore(parseISO(task.date), set(new Date(), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }))) {
 			return 'expired';
 		} else {
 			return 'upcoming';
@@ -230,6 +293,8 @@ class UI {
 	static #setEventListeners() {
 		const addProjectButton = document.querySelector('#add-project');
 		const cancelProjectButton = document.querySelector('#project-form button[title="Cancel"]');
+		const addTaskButton = document.querySelector('#add-task');
+		const cancelTaskButton = document.querySelector('#task-form button[type="button"]');
 		addProjectButton.addEventListener('click', () => UI.showProjectForm());
 		cancelProjectButton.addEventListener('click', () => UI.hideProjectForm());
 		UI.projectForm.addEventListener('submit', e => {
@@ -237,6 +302,15 @@ class UI {
 				Events.editProject(e);
 			} else {
 				Events.addProject(e);
+			}
+		});
+		addTaskButton.addEventListener('click', () => UI.showTaskForm());
+		cancelTaskButton.addEventListener('click', () => UI.hideTaskForm());
+		UI.taskForm.addEventListener('submit', e => {
+			if (e.target.dataset.id) {
+				Events.editTask(e);
+			} else {
+				Events.addTask(e);
 			}
 		});
 	}
