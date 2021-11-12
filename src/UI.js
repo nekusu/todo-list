@@ -5,6 +5,7 @@ import lod from 'lod';
 import { isToday, isBefore, parseISO, set } from 'date-fns';
 
 class UI {
+	static main = document.querySelector('main');
 	static projects = document.querySelector('#projects');
 	static projectForm = document.querySelector('#project-form');
 	static tasks = document.querySelector('#tasks');
@@ -16,11 +17,13 @@ class UI {
 	};
 	static noProjects = UI.tasks.querySelector('#no-projects');
 	static noTasks = UI.tasks.querySelector('#no-tasks');
+	static bottomBar = document.querySelector('#bottom-bar');
 	static selectedProject;
 
 	static loadHomePage() {
 		UI.#setEventListeners();
 		UI.loadProjects();
+		UI.#setFixedElementsWidth();
 	}
 
 	static loadProjects() {
@@ -310,12 +313,20 @@ class UI {
 		}
 	}
 
+	static #setFixedElementsWidth() {
+		UI.taskForm.style.width = `${UI.main.clientWidth * 0.9}px`;
+		UI.bottomBar.style.width = `${UI.main.clientWidth * 0.9}px`;
+	}
+
 	static #setEventListeners() {
+		const sidebar = document.querySelector('#sidebar');
+		const openProjectsButton = document.querySelector('#open-projects');
 		const addProjectButton = document.querySelector('#add-project');
 		const cancelProjectButton = document.querySelector('#project-form button[title="Cancel"]');
 		const addTaskButton = document.querySelector('#add-task');
 		const cancelTaskButton = document.querySelector('#task-form button[type="button"]');
 		Object.values(UI.dateGroups).forEach(group => group.addEventListener('click', Events.expand));
+		openProjectsButton.addEventListener('click', () => sidebar.classList.toggle('open'))
 		addProjectButton.addEventListener('click', () => UI.showProjectForm());
 		cancelProjectButton.addEventListener('click', () => UI.hideProjectForm());
 		UI.projectForm.addEventListener('submit', e => {
@@ -334,6 +345,7 @@ class UI {
 				Events.addTask(e);
 			}
 		});
+		window.addEventListener('resize', UI.#setFixedElementsWidth);
 	}
 
 	static #createElement(tag, attributes, ...children) {

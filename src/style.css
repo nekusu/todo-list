@@ -88,6 +88,7 @@ span {
 	z-index: 3;
 	background-color: var(--bg-alt);
 	box-shadow: var(--distant-shadow);
+	transition: var(--transition);
 }
 #sidebar h1 {
 	margin: 30px 45px 15px;
@@ -106,14 +107,18 @@ span {
 	padding: 5px 35px 10px;
 	display: flex;
 	flex-wrap: wrap;
-	justify-content: space-between;
-	scrollbar-gutter: stable both-edges;
+	justify-content: flex-start;
+	overflow: hidden;
 }
 #sidebar #add-project {
 	margin-bottom: 34px;
 	position: fixed;
 	bottom: 0;
-	left: 143.5px;
+	left: calc(var(--sidebar-width) / 2 - 77.5px);
+}
+#sidebar.open {
+	transform: none;
+	opacity: 1;
 }
 
 .project {
@@ -245,7 +250,7 @@ main {
 #tasks.hidden {
 	transform: translateY(-100%);
 	opacity: 0;
-	overflow-y: hidden;
+	overflow: hidden;
 }
 #tasks header {
 	width: calc(100% + 40px);
@@ -305,6 +310,10 @@ main {
 	font-weight: 700;
 	user-select: none;
 	color: var(--text-alt);
+	transition: var(--transition);
+}
+#tasks .date-type > span:hover {
+	color: var(--text);
 }
 #tasks .date-group .tasks-list {
 	display: none;
@@ -439,7 +448,6 @@ main {
 }
 
 #task-form {
-	width: calc(95% - var(--sidebar-width));
 	max-width: 600px;
 	position: fixed;
 	z-index: 0;
@@ -526,21 +534,36 @@ main {
 }
 
 #bottom-bar {
-	height: 40px;
-	width: calc(95% - var(--sidebar-width));
 	position: fixed;
 	z-index: 3;
 	bottom: 34px;
+	display: flex;
+	justify-content: space-between;
+	pointer-events: none;
+}
+#bottom-bar .button {
+	height: 40px;
+	width: 40px;
+	padding: 0;
+}
+#bottom-bar .button > * {
+	padding: 8px;
+}
+
+#open-projects {
+	opacity: 0;
+}
+#open-projects .material-icons-round {
+	margin: 0;
+	font-size: 20px;
+	vertical-align: initial;
 }
 
 #github {
-	padding: 0;
-	position: absolute;
-	right: 0;
+	pointer-events: auto;
 }
 #github img {
 	height: 40px;
-	padding: 8px;
 	vertical-align: middle;
 	filter: invert(.8);
 	transition: filter 0.25s;
@@ -549,8 +572,63 @@ main {
 	filter: invert(1);
 }
 
-@media screen and (max-width: 1450px) {
+@media screen and (max-width: 1500px) {
 	#tasks {
 		margin-bottom: 64px;
+	}
+}
+@media screen and (max-width: 1100px) {
+	:root {
+		--sidebar-width: 255px;
+	}
+}
+@media screen and (max-width: 650px) {
+	:root {
+		--sidebar-width: 100vw;
+	}
+	#sidebar {
+		position: fixed;
+		transform: translateX(-100%);
+		opacity: 0;
+	}
+	#sidebar,
+	#sidebar > .container {
+		width: 100%;
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-start;
+		align-items: center;
+	}
+	#sidebar h1 {
+		width: 90%;
+		padding-inline: 5px;
+	}
+	#sidebar #projects {
+		width: 555px;
+		max-width: calc(90% + 20px);
+		padding-inline: 0;
+	}
+	#open-projects {
+		pointer-events: auto;
+		opacity: 1;
+	}
+}
+@media screen and (max-width: 600px){
+	#sidebar #projects {
+		width: 370px;
+	}
+}
+@media screen and (max-width: 460px){
+	#task-form .container {
+		display: block;
+	}
+	#task-form .buttons {
+		display: block;
+		text-align: right;
+	}
+}
+@media screen and (max-width: 388px){
+	#sidebar #projects {
+		width: 200px;
 	}
 }
