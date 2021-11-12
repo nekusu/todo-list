@@ -14,11 +14,13 @@ class UI {
 		today: document.querySelector('#today'),
 		upcoming: document.querySelector('#upcoming')
 	};
+	static noProjects = UI.tasks.querySelector('#no-projects');
+	static noTasks = UI.tasks.querySelector('#no-tasks');
 	static selectedProject;
 
 	static loadHomePage() {
-		UI.loadProjects();
 		UI.#setEventListeners();
+		UI.loadProjects();
 	}
 
 	static loadProjects() {
@@ -41,15 +43,23 @@ class UI {
 	}
 
 	static loadTasks(projectName) {
+		const form = UI.taskForm.querySelector('form');
 		UI.#setProjectName(projectName);
 		UI.#clearTasks();
-		const form = UI.taskForm.querySelector('form');
+		UI.#checkTasks(projectName)
 		if (projectName === 'All tasks' || form.dataset.id) {
 			UI.hideTaskForm();
 		}
 		if (projectName === 'All tasks') {
+			if (TodoList.projects.length > 1) {
+				UI.noProjects.classList.add('hidden');
+			} else {
+				UI.noProjects.classList.remove('hidden');
+				UI.noTasks.classList.add('hidden');
+			}
 			UI.#hideAddTaskButton();
 		} else {
+			UI.noProjects.classList.add('hidden');
 			UI.#showAddTaskButton();
 		}
 		for (const task of TodoList.getProject(projectName).tasks) {
@@ -152,6 +162,7 @@ class UI {
 			dateGroup.classList.add('hidden');
 		}
 		taskElement.remove();
+		UI.#checkTasks(projectName);
 		UI.updateTaskCount(projectName);
 	}
 
@@ -250,6 +261,15 @@ class UI {
 		}
 	}
 
+	static #checkTasks(projectName) {
+		const project = TodoList.getProject(projectName);
+		if (project.tasks.length) {
+			UI.noTasks.classList.add('hidden');
+		} else {
+			UI.noTasks.classList.remove('hidden');
+		}
+	}
+
 	static #setProjectName(name) {
 		const elements = document.querySelectorAll('.project-name');
 		for (const element of elements) {
@@ -295,6 +315,7 @@ class UI {
 		const cancelProjectButton = document.querySelector('#project-form button[title="Cancel"]');
 		const addTaskButton = document.querySelector('#add-task');
 		const cancelTaskButton = document.querySelector('#task-form button[type="button"]');
+		Object.values(UI.dateGroups).forEach(group => group.addEventListener('click', Events.expand));
 		addProjectButton.addEventListener('click', () => UI.showProjectForm());
 		cancelProjectButton.addEventListener('click', () => UI.hideProjectForm());
 		UI.projectForm.addEventListener('submit', e => {

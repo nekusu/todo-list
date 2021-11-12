@@ -49,16 +49,38 @@
 					<span class="material-icons-round">add_task</span> Add task
 				</button>
 			</header>
+			<div id="no-projects">
+				<span>No projects found</span>
+				<button class="button" id="get-started">
+					<span class="material-icons-round">bolt</span>Get started
+				</button>
+			</div>
+			<span id="no-tasks">No tasks found</span>
 			<div class="date-group" id="expired">
-				<span>Expired</span>
+				<div class="date-type">
+					<span class="expand">Expired</span>
+					<button class="expand icon-button" title="Expand">
+						<span class="material-icons-round ">expand_more</span>
+					</button>
+				</div>
 				<div class="tasks-list"></div>
 			</div>
-			<div class="date-group" id="today">
-				<span>Today</span>
+			<div class="date-group expanded" id="today">
+				<div class="date-type">
+					<span class="expand">Today</span>
+					<button class="expand icon-button" title="Expand">
+						<span class="material-icons-round ">expand_more</span>
+					</button>
+				</div>
 				<div class="tasks-list"></div>
 			</div>
-			<div class="date-group" id="upcoming">
-				<span>Upcoming</span>
+			<div class="date-group expanded" id="upcoming">
+				<div class="date-type">
+					<span class="expand">Upcoming</span>
+					<button class="expand icon-button" title="Expand">
+						<span class="material-icons-round ">expand_more</span>
+					</button>
+				</div>
 				<div class="tasks-list"></div>
 			</div>
 		</div>
@@ -87,6 +109,10 @@
 				</div>
 			</form>
 		</div>
+		<nav id="bottom-bar">
+			<a id="github" href="https://github.com/nekusu" target="_blank" title="Check my GitHub!" class="button"><img
+					src="https://pngimg.com/uploads/github/github_PNG80.png" alt="GitHub"></a>
+		</nav>
 	</main>
 	<script src="bundle.js"></script>
 </body>

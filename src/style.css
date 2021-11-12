@@ -19,15 +19,18 @@
 	--close-shadow: 0 2px 6px rgba(0, 0, 0, 0.075), 0 8px 14px rgba(0, 0, 0, 0.1);
 	--distant-shadow: 0 2px 6px rgba(0, 0, 0, 0.125), 0 12px 20px rgba(0, 0, 0, 0.175);
 	--transition: color 0.25s, background-color 0.25s, border-color 0.25s, box-shadow 0.25s, transform 0.2s, opacity 0.25s;
+	--sidebar-width: 440px;
 }
 
 body {
+	display: flex;
 	background-color: var(--bg);
 }
 
 span {
 	pointer-events: none;
 }
+.date-type > span,
 .drag span {
 	pointer-events: auto;
 }
@@ -80,9 +83,9 @@ span {
 
 #sidebar {
 	height: 100vh;
-	width: 440px;
-	position: fixed;
-	top: 0;
+	width: var(--sidebar-width);
+	position: relative;
+	z-index: 3;
 	background-color: var(--bg-alt);
 	box-shadow: var(--distant-shadow);
 }
@@ -99,7 +102,7 @@ span {
 	overflow-y: auto;
 }
 #sidebar #projects {
-	width: 440px;
+	width: var(--sidebar-width);
 	padding: 5px 35px 10px;
 	display: flex;
 	flex-wrap: wrap;
@@ -107,7 +110,7 @@ span {
 	scrollbar-gutter: stable both-edges;
 }
 #sidebar #add-project {
-	margin-bottom: 35px;
+	margin-bottom: 34px;
 	position: fixed;
 	bottom: 0;
 	left: 143.5px;
@@ -221,11 +224,12 @@ span {
 
 main {
 	height: 100vh;
-	margin-left: 440px;
+	width: 100%;
 	position: relative;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
+	overflow-x: hidden;
 }
 
 #tasks {
@@ -241,14 +245,19 @@ main {
 #tasks.hidden {
 	transform: translateY(-100%);
 	opacity: 0;
+	overflow-y: hidden;
 }
 #tasks header {
-	width: 100%;
-	padding: 30px 6px 10px;
+	width: calc(100% + 40px);
+	padding: 30px 26px 26px;
+	position: sticky;
+	z-index: 2;
+	top: 0;
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
 	flex-wrap: wrap;
+	background-color: var(--bg);
 }
 #tasks #add-task {
 	transition: var(--transition);
@@ -264,16 +273,47 @@ main {
 	font-weight: 800;
 	color: var(--text);
 }
-#tasks > .date-group {
-	margin-top: 16px;
+#tasks #no-projects {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+#tasks #no-projects.hidden {
+	display: none;
+}
+#tasks #no-projects > span,
+#tasks #no-tasks {
+	margin: 25vh 0 30px;
+	font-size: 70px;
+	font-weight: 800;
+	text-align: center;
+	color: var(--bg-alt3);
+}
+#tasks .date-group {
+	margin-bottom: 16px;
 	width: 100%;
 }
-#tasks .date-group > span {
+#tasks .date-type {
 	padding-inline: 10px;
-	display: block;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+#tasks .date-type > span {
+	cursor: pointer;
 	font-size: 24px;
 	font-weight: 700;
+	user-select: none;
 	color: var(--text-alt);
+}
+#tasks .date-group .tasks-list {
+	display: none;
+}
+#tasks .date-group.expanded .tasks-list {
+	display: block;
+}
+#tasks .date-group.expanded .date-type button.expand {
+	transform: rotate(180deg);
 }
 
 .task {
@@ -399,7 +439,7 @@ main {
 }
 
 #task-form {
-	width: calc(95% - 440px);
+	width: calc(95% - var(--sidebar-width));
 	max-width: 600px;
 	position: fixed;
 	z-index: 0;
@@ -483,4 +523,34 @@ main {
 #task-form .buttons > button:first-child {
 	background-color: transparent;
 	box-shadow: none;
+}
+
+#bottom-bar {
+	height: 40px;
+	width: calc(95% - var(--sidebar-width));
+	position: fixed;
+	z-index: 3;
+	bottom: 34px;
+}
+
+#github {
+	padding: 0;
+	position: absolute;
+	right: 0;
+}
+#github img {
+	height: 40px;
+	padding: 8px;
+	vertical-align: middle;
+	filter: invert(.8);
+	transition: filter 0.25s;
+}
+#github:hover img {
+	filter: invert(1);
+}
+
+@media screen and (max-width: 1450px) {
+	#tasks {
+		margin-bottom: 64px;
+	}
 }

@@ -61,6 +61,7 @@ class Events {
 	}
 
 	static expand(e) {
+		e.stopPropagation();
 		if (e.target.classList.contains('expand')) {
 			if (this.classList.contains('expanded')) {
 				this.classList.remove('expanded');
