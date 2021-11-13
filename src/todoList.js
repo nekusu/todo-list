@@ -26,8 +26,7 @@ class TodoList {
 		return TodoList.projects.find(project => project.name === projectName);
 	}
 	static getProjectById(projectId) {
-		const projectName = projectId.replace(/-/g, ' ');
-		return TodoList.getProject(projectName);
+		return TodoList.projects.find(project => project.id === +projectId);
 	}
 	static setProjects(projects) {
 		TodoList.projects = projects;

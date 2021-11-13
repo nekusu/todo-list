@@ -26,13 +26,13 @@ class Events {
 					sibling.classList.remove('selected');
 				}
 			}
-			const projectName = TodoList.getProjectById(e.target.parentNode.id).name;
+			const projectName = TodoList.getProjectById(e.target.parentNode.dataset.id).name;
 			UI.loadTasks(projectName);
 		}
 	}
 	static openEditProjectForm(e) {
 		if (e.target.classList.contains('edit')) {
-			UI.showProjectForm(this.id);
+			UI.showProjectForm(this.dataset.id);
 		}
 	}
 	static editProject(e) {
@@ -41,9 +41,8 @@ class Events {
 		const project = TodoList.getProjectById(form.dataset.id);
 		const projectName = form.name.value.trim();
 		if (!TodoList.contains(projectName) || project.name === projectName) {
-			project.name = projectName;
+			project.setName(projectName);
 			UI.editProject(form.dataset.id, projectName);
-			form.dataset.id = UI.toId(projectName);
 			UI.hideProjectForm();
 		} else {
 			alert(`Project "${projectName}" already exists.`);
@@ -51,7 +50,7 @@ class Events {
 	}
 	static deleteProject(e) {
 		if (e.target.classList.contains('delete')) {
-			const projectName = TodoList.getProjectById(this.id).name;
+			const projectName = TodoList.getProjectById(this.dataset.id).name;
 			TodoList.deleteProject(projectName);
 			if (this.classList.contains('selected')) {
 				this.previousElementSibling.firstElementChild.click();

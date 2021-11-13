@@ -1,7 +1,6 @@
 import Events from './events.js';
 import TodoList from './todoList.js';
 import Sortable from 'sortablejs';
-import lod from 'lod';
 import { isToday, isBefore, parseISO, set } from 'date-fns';
 
 class UI {
@@ -22,29 +21,7 @@ class UI {
 	static selectedProject;
 
 	static loadHomePage() {
-		const animationTime = 300;
-		const handleClass = '.drag';
-		Sortable.create(UI.projects, {
-			group: 'projects',
-			handle: handleClass,
-			animation: animationTime,
-			draggable: '.project:not(#All-tasks)',
-			onEnd: UI.#saveProjectsOrder
-		});
-		Sortable.create(UI.dateGroups.today.lastElementChild, {
-			group: 'today-tasks',
-			handle: handleClass,
-			animation: animationTime,
-			draggable: '.task',
-			onEnd: UI.#saveTasksOrder
-		});
-		Sortable.create(UI.dateGroups.unknown.lastElementChild, {
-			group: 'unknown-tasks',
-			handle: handleClass,
-			animation: animationTime,
-			draggable: '.task',
-			onEnd: UI.#saveTasksOrder
-		});
+		UI.#createSortableGroups();
 		UI.#setEventListeners();
 		UI.loadProjects();
 		UI.#setFixedElementsWidth();
@@ -62,6 +39,7 @@ class UI {
 		UI.#setProjectName(projectName);
 		UI.#clearTasks();
 		UI.#checkTasks(projectName)
+		UI.updateTaskCount(projectName);
 		if (projectName === 'All tasks' || form.dataset.id) {
 			UI.hideTaskForm();
 		}
@@ -95,22 +73,19 @@ class UI {
 		const container = UI.#createElement('div', { class: 'container' }, name, tasks);
 		const box = UI.#createElement('div', { class: 'box' }, container, project.name === 'All tasks' ? null : createButtons())
 		const projectElement = UI.#createElement('div', { class: 'project' }, box);
-		projectElement.id = UI.toId(project.name);
+		projectElement.dataset.id = project.id;
 		[Events.selectProject, Events.openEditProjectForm, Events.deleteProject].forEach(fun => projectElement.addEventListener('click', fun));
 		UI.projects.appendChild(projectElement);
-		UI.#resetIds(UI.projects.children);
 		projectElement.firstElementChild.click();
 	}
-	static editProject(oldProjectId, newProjectName) {
-		const projectElement = UI.projects.querySelector(`#${oldProjectId}`)
+	static editProject(projectId, projectName) {
+		const projectElement = UI.projects.querySelector(`.project[data-id="${projectId}"`)
 		const nameElement = projectElement.querySelector('.name');
-		projectElement.id = UI.toId(newProjectName);
-		nameElement.textContent = newProjectName;
+		nameElement.textContent = projectName;
 		projectElement.firstElementChild.click();
 	}
 	static removeProject(projectElement) {
 		projectElement.remove();
-		UI.#resetIds(UI.projects.children);
 		if (UI.selectedProject === 'All tasks') {
 			UI.loadTasks('All tasks');
 		}
@@ -186,7 +161,7 @@ class UI {
 		setTimeout(() => {
 			projects.push('All tasks');
 			for (const project of projects) {
-				const projectElement = UI.projects.querySelector(`#${UI.toId(project)}`);
+				const projectElement = UI.projects.querySelector(`.project[data-id="${TodoList.getProject(project).id}"`);
 				const tasks = projectElement.querySelector('.tasks');
 				tasks.textContent = TodoList.getTaskCount(project);
 			}
@@ -199,7 +174,7 @@ class UI {
 			UI.#showProject(form.dataset.id);
 		}
 		if (projectId) {
-			const projectElement = UI.projects.querySelector(`#${projectId}`);
+			const projectElement = UI.projects.querySelector(`.project[data-id="${projectId}"`);
 			form.name.value = TodoList.getProjectById(projectId).name;
 			UI.#hideProject(projectId);
 			UI.projects.insertBefore(UI.projectForm, projectElement);
@@ -257,23 +232,35 @@ class UI {
 		return UI.getClosestParent(element.parentNode, selector);
 	}
 
-	static toId(name) {
-		return name.replace(/\s/g, '-');
-	}
-
-	static #resetIds(array) {
-		let i = 0;
-		for (const item of array) {
-			if (!item.dataset.id || item.dataset.id >= 0) {
-				item.dataset.id = i++;
-			}
-		}
+	static #createSortableGroups() {
+		const animationTime = 300;
+		const handleClass = '.drag';
+		Sortable.create(UI.projects, {
+			group: 'projects',
+			handle: handleClass,
+			animation: animationTime,
+			draggable: '.project:not(#All-tasks)',
+			onEnd: UI.#saveProjectsOrder
+		});
+		Sortable.create(UI.dateGroups.today.lastElementChild, {
+			group: 'today-tasks',
+			handle: handleClass,
+			animation: animationTime,
+			draggable: '.task',
+			onEnd: UI.#saveTasksOrder
+		});
+		Sortable.create(UI.dateGroups.unknown.lastElementChild, {
+			group: 'unknown-tasks',
+			handle: handleClass,
+			animation: animationTime,
+			draggable: '.task',
+			onEnd: UI.#saveTasksOrder
+		});
 	}
 
 	static #saveProjectsOrder() {
 		const indexArray = [...UI.projects.children].map(project => +project.dataset.id).filter(id => id >= 0);
-		TodoList.setProjects(lod(TodoList.projects, indexArray));
-		UI.#resetIds(UI.projects.children);
+		TodoList.setProjects(indexArray.map(i => TodoList.getProjectById(i)));
 		if (UI.selectedProject === 'All tasks') {
 			UI.loadTasks('All tasks');
 		}
@@ -281,8 +268,7 @@ class UI {
 	static #saveTasksOrder() {
 		const indexArray = [...UI.tasks.querySelectorAll('.task')].map(task => +task.dataset.id);
 		const project = TodoList.getProject(UI.selectedProject);
-		project.tasks = indexArray.map(i => project.getTaskById(i));
-		console.log(project.tasks);
+		project.setTasks(indexArray.map(i => project.getTaskById(i)));
 	}
 
 	static #clearTasks() {
@@ -310,16 +296,12 @@ class UI {
 	}
 
 	static #showProject(projectId) {
-		const project = UI.projects.querySelector(`#${projectId}`);
-		if (project) {
-			project.classList.remove('hidden');
-		}
+		const project = UI.projects.querySelector(`.project[data-id="${projectId}"`);
+		project.classList.remove('hidden');
 	}
 	static #hideProject(projectId) {
-		const project = UI.projects.querySelector(`#${projectId}`);
-		if (project) {
-			project.classList.add('hidden');
-		}
+		const project = UI.projects.querySelector(`.project[data-id="${projectId}"`);
+		project.classList.add('hidden');
 	}
 
 	static #showAddTaskButton() {

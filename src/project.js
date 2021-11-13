@@ -1,9 +1,19 @@
 class Project {
+	static #lastId = localStorage.getItem('lastProjectId') || 0;
+
 	constructor(name) {
 		this.name = name;
 		this.tasks = [];
+		this.id = +Project.#lastId;
+		if (name) {
+			localStorage.setItem('lastProjectId', ++Project.#lastId);
+		}
 	}
 
+	setName(name) {
+		this.name = name;
+		this.save();
+	}
 	contains(taskName) {
 		return this.tasks.some(task => task.name === taskName);
 	}
@@ -12,6 +22,10 @@ class Project {
 	}
 	getTaskById(taskId) {
 		return this.tasks.find(task => task.id === +taskId);
+	}
+	setTasks(tasks) {
+		this.tasks = tasks;
+		this.save();
 	}
 	addTask(...tasks) {
 		for (const task of tasks) {

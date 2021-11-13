@@ -39,8 +39,9 @@ function getStarted() {
 }
 
 function setDefaultProject() {
-	const allTasks = new Project('All tasks');
-	TodoList.addProject(allTasks);
+	if (!TodoList.contains('All tasks')) {
+		TodoList.addProject(new Project('All tasks'));
+	}
 }
 
 getStartedButton.addEventListener('click', getStarted);
