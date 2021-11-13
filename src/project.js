@@ -19,6 +19,9 @@ class Project {
 				this.tasks.push(task);
 			}
 		}
+		this.tasks.sort((a, b) => {
+			return new Date(a.date) - new Date(b.date);
+		})
 		this.save();
 	}
 	deleteTask(taskName) {

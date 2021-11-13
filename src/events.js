@@ -79,8 +79,7 @@ class Events {
 		if (!project.contains(taskName)) {
 			const task = new Task(taskName, project.name, form.description.value.trim(), form.date.value);
 			project.addTask(task);
-			UI.appendTask(task);
-			UI.updateTaskCount(task.project);
+			UI.loadTasks(project.name);
 			UI.hideTaskForm();
 		} else {
 			alert(`Task "${taskName}" already exists.`);
@@ -94,12 +93,12 @@ class Events {
 				this.classList.add('checked');
 			}
 			const taskElement = UI.getClosestParent(e.target, '.task');
-			TodoList.getTaskById(taskElement.id).toggleCheck();
+			TodoList.getTaskById(taskElement.dataset.id).toggleCheck();
 		}
 	}
 	static openEditTaskForm(e) {
 		if (e.target.classList.contains('edit')) {
-			UI.showTaskForm(this.id);
+			UI.showTaskForm(this.dataset.id);
 		}
 	}
 	static editTask(e) {
@@ -119,7 +118,7 @@ class Events {
 	static deleteTask(e) {
 		if (e.target.classList.contains('delete')) {
 			const taskElement = UI.getClosestParent(e.target, '.task');
-			const task = TodoList.getTaskById(taskElement.id);
+			const task = TodoList.getTaskById(taskElement.dataset.id);
 			TodoList.getProject(task.project).deleteTask(task.name);
 			UI.removeTask(taskElement, task.project);
 		}

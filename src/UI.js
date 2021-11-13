@@ -1,6 +1,6 @@
 import Events from './events.js';
-import Sortable from 'sortablejs';
 import TodoList from './todoList.js';
+import Sortable from 'sortablejs';
 import lod from 'lod';
 import { isToday, isBefore, parseISO, set } from 'date-fns';
 
@@ -13,7 +13,8 @@ class UI {
 	static dateGroups = {
 		expired: document.querySelector('#expired'),
 		today: document.querySelector('#today'),
-		upcoming: document.querySelector('#upcoming')
+		upcoming: document.querySelector('#upcoming'),
+		unknown: document.querySelector('#unknown')
 	};
 	static noProjects = UI.tasks.querySelector('#no-projects');
 	static noTasks = UI.tasks.querySelector('#no-tasks');
@@ -21,6 +22,29 @@ class UI {
 	static selectedProject;
 
 	static loadHomePage() {
+		const animationTime = 300;
+		const handleClass = '.drag';
+		Sortable.create(UI.projects, {
+			group: 'projects',
+			handle: handleClass,
+			animation: animationTime,
+			draggable: '.project:not(#All-tasks)',
+			onEnd: UI.#saveProjectsOrder
+		});
+		Sortable.create(UI.dateGroups.today.lastElementChild, {
+			group: 'today-tasks',
+			handle: handleClass,
+			animation: animationTime,
+			draggable: '.task',
+			onEnd: UI.#saveTasksOrder
+		});
+		Sortable.create(UI.dateGroups.unknown.lastElementChild, {
+			group: 'unknown-tasks',
+			handle: handleClass,
+			animation: animationTime,
+			draggable: '.task',
+			onEnd: UI.#saveTasksOrder
+		});
 		UI.#setEventListeners();
 		UI.loadProjects();
 		UI.#setFixedElementsWidth();
@@ -31,18 +55,6 @@ class UI {
 			UI.appendProject(project);
 		}
 		UI.projects.children[1].firstElementChild.click();
-		Sortable.create(UI.projects, {
-			group: 'projects',
-			handle: '.drag',
-			animation: 300,
-			draggable: '.project:not(#All-tasks)',
-			swapThreshold: 0.75,
-			onEnd: function () {
-				const indexArray = [...UI.projects.children].map(project => +project.dataset.id).filter(id => id >= 0);
-				TodoList.setProjects(lod(TodoList.projects, indexArray));
-				UI.#resetIds(UI.projects.children);
-			}
-		});
 	}
 
 	static loadTasks(projectName) {
@@ -106,6 +118,7 @@ class UI {
 	}
 
 	static appendTask(task) {
+		const isTodayDate = isToday(parseISO(task.date));
 		const createHeader = (task) => {
 			const createCheckBox = () => {
 				const uncheckedIcon = UI.#createIcon('radio_button_unchecked', 'uncheck');
@@ -118,7 +131,7 @@ class UI {
 				const editButton = UI.#createButton('edit', 'edit');
 				const deleteButton = UI.#createButton('delete', 'delete');
 				const buttons = UI.#createElement('div', { class: 'buttons' }, expandButton, editButton, deleteButton);
-				if (!task.description && (!task.date || isToday(parseISO(task.date)))) {
+				if (!task.description && (!task.date || isTodayDate)) {
 					expandButton.classList.add('hidden');
 				}
 				return buttons;
@@ -127,7 +140,7 @@ class UI {
 			const name = UI.#createElement('p', { class: 'name' }, task.name);
 			const container = UI.#createElement('div', { class: 'container' }, dragButton, createCheckBox(), name);
 			const header = UI.#createElement('div', { class: 'header' }, container, createButtons());
-			if (UI.selectedProject === 'All tasks' || !isToday(parseISO(task.date))) {
+			if (UI.selectedProject === 'All tasks' || task.date && !isTodayDate) {
 				dragButton.classList.add('hidden');
 			}
 			return header;
@@ -138,7 +151,7 @@ class UI {
 			if (!task.description) {
 				description.classList.add('hidden');
 			}
-			if (!task.date || isToday(parseISO(task.date))) {
+			if (!task.date || isTodayDate) {
 				date.classList.add('hidden');
 			}
 			const info = UI.#createElement('div', { class: 'info' }, description, date);
@@ -154,7 +167,7 @@ class UI {
 		if (task.isChecked) {
 			taskElement.classList.add('checked');
 		}
-		taskElement.id = task.id;
+		taskElement.dataset.id = task.id;
 		[Events.expand, Events.checkTask, Events.openEditTaskForm, Events.deleteTask].forEach(fun => taskElement.addEventListener('click', fun));
 		UI.dateGroups[group].classList.remove('hidden');
 		UI.dateGroups[group].lastElementChild.appendChild(taskElement);
@@ -257,6 +270,21 @@ class UI {
 		}
 	}
 
+	static #saveProjectsOrder() {
+		const indexArray = [...UI.projects.children].map(project => +project.dataset.id).filter(id => id >= 0);
+		TodoList.setProjects(lod(TodoList.projects, indexArray));
+		UI.#resetIds(UI.projects.children);
+		if (UI.selectedProject === 'All tasks') {
+			UI.loadTasks('All tasks');
+		}
+	}
+	static #saveTasksOrder() {
+		const indexArray = [...UI.tasks.querySelectorAll('.task')].map(task => +task.dataset.id);
+		const project = TodoList.getProject(UI.selectedProject);
+		project.tasks = indexArray.map(i => project.getTaskById(i));
+		console.log(project.tasks);
+	}
+
 	static #clearTasks() {
 		for (const group in UI.dateGroups) {
 			UI.dateGroups[group].classList.add('hidden');
@@ -304,13 +332,15 @@ class UI {
 	}
 
 	static #findDateGroup(task) {
-		if (isToday(parseISO(task.date))) {
+		if (!task.date) {
+			return 'unknown';
+		}
+		else if (isToday(parseISO(task.date))) {
 			return 'today';
 		} else if (isBefore(parseISO(task.date), set(new Date(), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }))) {
 			return 'expired';
-		} else {
-			return 'upcoming';
 		}
+		return 'upcoming';
 	}
 
 	static #setFixedElementsWidth() {
