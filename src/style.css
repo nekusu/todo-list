@@ -76,6 +76,13 @@ span {
 	vertical-align: initial;
 }
 
+.sortable-ghost {
+	opacity: 0;
+}
+.sortable-drag {
+	opacity: 1 !important;
+}
+
 .hidden {
 	display: none;
 }
