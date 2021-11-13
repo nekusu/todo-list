@@ -233,13 +233,15 @@ class UI {
 	}
 
 	static #createSortableGroups() {
-		const animationTime = 300;
 		const handleClass = '.drag';
+		const animationTime = 300;
+		const fallback = true;
 		Sortable.create(UI.projects, {
 			group: 'projects',
 			handle: handleClass,
 			animation: animationTime,
-			draggable: '.project:not(#All-tasks)',
+			draggable: '.project:not(.project[data-id="0"])',
+			forceFallback: fallback,
 			onEnd: UI.#saveProjectsOrder
 		});
 		Sortable.create(UI.dateGroups.today.lastElementChild, {
@@ -247,6 +249,7 @@ class UI {
 			handle: handleClass,
 			animation: animationTime,
 			draggable: '.task',
+			forceFallback: fallback,
 			onEnd: UI.#saveTasksOrder
 		});
 		Sortable.create(UI.dateGroups.unknown.lastElementChild, {
@@ -254,6 +257,7 @@ class UI {
 			handle: handleClass,
 			animation: animationTime,
 			draggable: '.task',
+			forceFallback: fallback,
 			onEnd: UI.#saveTasksOrder
 		});
 	}

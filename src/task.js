@@ -7,8 +7,10 @@ class Task {
 		this.description = description;
 		this.date = date;
 		this.isChecked = false;
-		this.id = Task.#lastId++;
-		localStorage.setItem('lastTaskId', Task.#lastId);
+		this.id = +Task.#lastId;
+		if (name) {
+			localStorage.setItem('lastTaskId', ++Task.#lastId);
+		}
 	}
 
 	edit(name, description, date) {
