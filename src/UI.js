@@ -287,7 +287,7 @@ class UI {
 		const project = TodoList.getProject(projectName);
 		if (project.tasks.length) {
 			UI.noTasks.classList.add('hidden');
-		} else {
+		} else if (projectName === UI.selectedProject || !TodoList.getAllTasks().length) {
 			UI.noTasks.classList.remove('hidden');
 		}
 	}
