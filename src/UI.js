@@ -190,6 +190,7 @@ class UI {
 		const form = UI.projectForm.querySelector('form');
 		if (form.dataset.id) {
 			UI.#showProject(form.dataset.id);
+			form.dataset.id = '';
 		}
 		UI.projectForm.classList.add('hidden');
 		UI.projects.insertBefore(UI.projectForm, UI.projects.firstElementChild);
