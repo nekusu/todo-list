@@ -3,14 +3,13 @@ import Project from './project.js';
 import Task from './task.js';
 import TodoList from './todoList.js';
 import UI from './UI.js';
+import { formatISO } from 'date-fns';
 
 const getStartedButton = document.querySelector('#get-started');
 
 function getStarted() {
 	const getStarted = new Project('Get started');
-	const date = new Date();
-	const [day, month, year] = [date.getDate(), date.getMonth(), date.getFullYear()];
-	const today = `${year}-${month + 1}-${day}`;
+	const today = formatISO(new Date(), { representation: 'date' });
 	getStarted.addTask(
 		new Task(
 			'Create your first project! Expand to see more ->',
